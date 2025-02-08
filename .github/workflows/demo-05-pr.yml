@@ -1,41 +1,53 @@
-name: Demo 05 - Pull Request
+name: Build, Test, and Deploy to Network Share
 
 on:
-  pull_request:
-    branches: 
+  push:
+    branches:
       - main
-  
+
 jobs:
-  build-test-branch:
-    name: "Build and Test Of PR"
-    runs-on: ubuntu-20.04   # Changed from ubuntu-latest to ubuntu-20.04
+  build-and-deploy:
+    runs-on: windows-latest  # We use Windows so UNC paths can be handled easily
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-      - name: Setup .NET Core 5
+      - name: Setup .NET 5
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 5.0.x
-      
-      - name: Install dependencies
-        run: dotnet restore "${{ github.workspace }}/mywebapp/mywebapp.sln"
-      
+
+      - name: Restore
+        run: dotnet restore mywebapp/mywebapp.sln
+
       - name: Build
-        run: dotnet build "${{ github.workspace }}/mywebapp/mywebapp.sln" --configuration Release --no-restore
-      
+        run: dotnet build mywebapp/mywebapp.sln --configuration Release --no-restore
+
       - name: Test
-        run: |
-          dotnet test "${{ github.workspace }}/mywebapp/mywebapp.sln" --no-restore --verbosity normal --logger "trx;LogFileName=test-results.trx"
-      
+        run: dotnet test mywebapp/mywebapp.sln --no-restore --logger "trx;LogFileName=test-results.trx"
+
       - name: Publish
+        run: dotnet publish mywebapp/src/mywebapp.csproj -c Release -o published
+
+      - name: Deploy to Network Share
+        shell: pwsh
         run: |
-          dotnet publish "${{ github.workspace }}/mywebapp/src/mywebapp.csproj" -c Release -o mywebapp
-      
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mywebappbuildartifacts
-          path: mywebapp/**
-          if-no-files-found: error
-          retention-days: 90
+          Write-Host "Deploying application to a Windows share..."
+          
+          # The path to your published output.
+          $source = "${{ github.workspace }}\published"  # For example: D:\a\YourRepo\published
+          
+          # The UNC path of your network share where you want to deploy.
+          $destination = "\\SHASHANK\Users\spaka\OneDrive\Desktop\deploy"
+          
+          # 1. Map the network share using 'net use' with your stored secrets.
+          net use $destination /user:${{ secrets.SHARE_USERNAME }} ${{ secrets.SHARE_PASSWORD }} | Out-Null
+          
+          # 2. Copy the published files recursively to the share.
+          Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
+          
+          # 3. (Optional) Disconnect from the share.
+          net use $destination /delete | Out-Null
+          
+          Write-Host "Deployment complete."
