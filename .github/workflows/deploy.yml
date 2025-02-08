@@ -33,7 +33,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mywebappbuildartifacts
+          name: mywebappbuildartifacts-windows
           path: published/**
           if-no-files-found: error
           retention-days: 90
