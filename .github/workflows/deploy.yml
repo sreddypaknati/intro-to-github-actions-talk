@@ -1,7 +1,7 @@
 name: Build, Test, and Deploy to Network Share
 
 on:
-  push:
+  pull_request:
     branches:
       - main
 
@@ -29,25 +29,31 @@ jobs:
 
       - name: Publish
         run: dotnet publish mywebapp/src/mywebapp.csproj -c Release -o published
+      
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mywebappbuildartifacts-windows
+          path: published/**
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Deploy to Network Share
         shell: pwsh
         run: |
           Write-Host "Deploying application to a Windows share..."
-          
-          # The path to your published output.
-          $source = "${{ github.workspace }}\published"  # For example: D:\a\YourRepo\published
-          
-          # The UNC path of your network share where you want to deploy.
-          $destination = "\\SHASHANK\Users\spaka\OneDrive\Desktop\deploy"
-          
-          # 1. Map the network share using 'net use' with your stored secrets.
+
+          # Use single quotes so backslashes are taken literally in PowerShell
+          $source = '${{ github.workspace }}\published'
+          $destination = '\\SHASHANK\Users\spaka\OneDrive\Desktop\deploy'
+
+          # 1. Map the network share using net use with your stored secrets
           net use $destination /user:${{ secrets.SHARE_USERNAME }} ${{ secrets.SHARE_PASSWORD }} | Out-Null
-          
-          # 2. Copy the published files recursively to the share.
+
+          # 2. Copy the published files recursively to the share
           Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
-          
-          # 3. (Optional) Disconnect from the share.
+
+          # 3. Disconnect from the share (optional but recommended)
           net use $destination /delete | Out-Null
-          
+
           Write-Host "Deployment complete."
