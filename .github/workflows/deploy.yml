@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: windows-latest  # We use Windows so UNC paths can be handled easily
+    runs-on: [self-hosted, windows]   # We use Windows so UNC paths can be handled easily
 
     steps:
       - name: Checkout Code
