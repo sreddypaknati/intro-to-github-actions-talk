@@ -38,6 +38,14 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+      - name: Upload a Build Artifact
+            uses: actions/upload-artifact@v4
+            with:
+              name: mywebappbuildartifacts-windows
+              path: mywebapp/**
+              if-no-files-found: error
+              retention-days: 90
+          
       - name: Deploy to Network Share
         shell: powershell
         run: |
