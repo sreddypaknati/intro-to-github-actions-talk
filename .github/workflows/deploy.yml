@@ -47,13 +47,10 @@ jobs:
           $source = 'C:\actions-runner\_work\intro-to-github-actions-talk\intro-to-github-actions-talk\published'
           $destination = '\\SHASHANK\Users\spaka\OneDrive\Desktop\deploy'
 
-          # 1. Map the network share using net use with your stored secrets
-          net use $destination /user:${{ secrets.SHARE_USERNAME }} ${{ secrets.SHARE_PASSWORD }} | Out-Null
-
-          # 2. Copy the published files recursively to the share
+          # 1. Copy the published files recursively to the share
           Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
 
-          # 3. Disconnect from the share (optional but recommended)
+          # 2. Disconnect from the share (optional but recommended)
           net use $destination /delete | Out-Null
 
           Write-Host "Deployment complete."
