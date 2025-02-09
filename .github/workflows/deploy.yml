@@ -44,7 +44,7 @@ jobs:
           Write-Host "Deploying application to a Windows share..."
 
           # Use single quotes so backslashes are taken literally in PowerShell
-          $source = '${{ github.workspace }}\published'
+          $source = 'C:\actions-runner\_work\intro-to-github-actions-talk\intro-to-github-actions-talk\published'
           $destination = '\\SHASHANK\Users\spaka\OneDrive\Desktop\deploy'
 
           # 1. Map the network share using net use with your stored secrets
