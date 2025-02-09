@@ -39,7 +39,7 @@ jobs:
           retention-days: 90
 
       - name: Deploy to Network Share
-        shell: pwsh
+        shell: powershell
         run: |
           Write-Host "Deploying application to a Windows share..."
 
