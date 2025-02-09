@@ -38,18 +38,16 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-     - name: Deploy to Network Share
+      - name: Deploy to Network Share
         shell: powershell
         run: |
           Write-Host "Deploying application to a Windows share..."
-          
-          # Set the source folder (where the published files are located)
+
+          # Use single quotes so backslashes are taken literally in PowerShell
           $source = 'C:\actions-runner\_work\intro-to-github-actions-talk\intro-to-github-actions-talk\published'
-          
-          # Set the destination UNC path
           $destination = '\\SHASHANK\Users\spaka\OneDrive\Desktop\deploy'
-          
-          # Copy the published files recursively to the destination
+
+          # 1. Copy the published files recursively to the share
           Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
-          
+
           Write-Host "Deployment complete."
