@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: windows-latest  # We use Windows so UNC paths can be handled easily
+    runs-on: [self-hosted, windows] 
 
     steps:
       - name: Checkout Code
@@ -39,21 +39,15 @@ jobs:
           retention-days: 90
 
       - name: Deploy to Network Share
-        shell: pwsh
+        shell: powershell
         run: |
           Write-Host "Deploying application to a Windows share..."
 
           # Use single quotes so backslashes are taken literally in PowerShell
-          $source = '${{ github.workspace }}\published'
+          $source = 'C:\actions-runner\_work\intro-to-github-actions-talk\intro-to-github-actions-talk\published'
           $destination = '\\SHASHANK\Users\spaka\OneDrive\Desktop\deploy'
 
-          # 1. Map the network share using net use with your stored secrets
-          net use $destination /user:${{ secrets.SHARE_USERNAME }} ${{ secrets.SHARE_PASSWORD }} | Out-Null
-
-          # 2. Copy the published files recursively to the share
+          # 1. Copy the published files recursively to the share
           Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
-
-          # 3. Disconnect from the share (optional but recommended)
-          net use $destination /delete | Out-Null
 
           Write-Host "Deployment complete."
